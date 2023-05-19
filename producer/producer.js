@@ -13,9 +13,9 @@ const lorem = new LoremIpsum({
   },
 });
 
-const io = new Server(3000, {
+const io = new Server(3001, {
   cors: {
-    origin: "http://localhost:3001",
+    origin: "http://localhost:3000",
   },
 });
 
@@ -44,10 +44,8 @@ channel.consume(
 );
 
 io.on("connection", (socket) => {
-  console.log(`New user connected ${socket.id}`);
-  socket.on("messageFromApp", (connectionData) => {
-    console.log("socket on messageFromApp");
-    console.log("connectionData=", connectionData);
+  console.log(`New Socket connection: ${socket.id}`);
+  socket.on("messageReceived", (connectionData) => {
     let socketData = JSON.parse(connectionData);
     socketData.socketId = socket.id;
     console.log("initiating pushing messages...");
@@ -66,7 +64,7 @@ function pushMessageToQueue(data) {
   }, executionTimeMS);
 
   var pushQueue = setInterval(
-    (function (counter) {
+    (function () {
       return function () {
         if (sendMessage === false) {
           console.log("exiting...");
@@ -74,7 +72,6 @@ function pushMessageToQueue(data) {
           return;
         }
 
-        ++counter;
         let messageToQueue = lorem.generateSentences(1);
         let messagePriority = Math.floor(Math.random() * 10) + 1;
         let messageObject = {

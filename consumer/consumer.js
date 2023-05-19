@@ -12,19 +12,15 @@ await channel.assertQueue("zegalSecondQueue");
 channel.consume(
   "zegalFirstQueue",
   (event) => {
-    console.log(`consuming ZegalFirstQueue`);
+    console.log(`Consuming zegalFirstQueue`);
     let data = JSON.parse(event.content.toString());
 
-    RTCDataChannelEvent.sendToQueue(
-      chooseQueue(data.priority),
-      Buffer.from(event.content.toString())
-    );
+    data.priority >= 7
+      ? channel.sendToQueue(
+          "zegalSecondQueue",
+          Buffer.from(event.content.toString())
+        )
+      : "";
   },
   { noAck: true }
 );
-
-function chooseQueue(priority) {
-  if (priority <= 5) return "zegalFirstQueue";
-
-  return "zegalSecondQueue";
-}
